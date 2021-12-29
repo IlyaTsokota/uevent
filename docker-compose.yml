@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./api:/app/api
+    command: >
+      sh -c "cd src && python manage.py migrate && python manage.py runserver
+      0.0.0.0:8000"
+  ui:
+    container_name: react
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    volumes:
+      - './ui:/app/ui'
+      - '/app/node_modules'
+    ports:
+      - 3001:3000
+    depends_on:
+      - api
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: >
+      npm run start
