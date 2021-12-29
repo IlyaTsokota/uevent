@@ -11,3 +11,5 @@ COPY ./ /app/api
 
 RUN adduser -D user
 USER user
+
+EXPOSE 8001
