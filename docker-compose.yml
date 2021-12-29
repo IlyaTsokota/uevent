@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   api:
+    container_name: api
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -10,10 +11,9 @@ services:
     volumes:
       - ./api:/app/api
     command: >
-      sh -c "cd src && python manage.py migrate && python manage.py runserver
-      0.0.0.0:8000"
+      sh -c "cd src && python manage.py runserver 0.0.0.0:8000"
   ui:
-    container_name: react
+    container_name: ui
     build:
       context: ./ui
       dockerfile: Dockerfile
@@ -25,6 +25,6 @@ services:
     depends_on:
       - api
     environment:
-      - CHOKIDAR_USEPOLLING=true
+      CHOKIDAR_USEPOLLING: "true"
     command: >
       npm run start
