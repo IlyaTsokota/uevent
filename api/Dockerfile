@@ -4,10 +4,10 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app/api
 
-COPY ./requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt
+COPY ./requirements.txt /app/api/requirements.txt
+RUN pip install -r /app/api/requirements.txt
 
-COPY ./ /app/api
+COPY ./src /app/api
 
 RUN adduser -D user
 USER user

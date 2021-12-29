@@ -14,10 +14,10 @@
     "web-vitals": "^2.1.2"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "craco eject"
+    "start": "CLIENT_ENV=development craco start",
+    "build": "CLIENT_ENV=production craco build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
