@@ -1,4 +1,12 @@
+import jwt
+
+from datetime import datetime
+from datetime import timedelta
+
+from django.conf import settings
 from django.db import models
+from django.core import validators
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
 from django.urls import reverse
@@ -8,28 +16,45 @@ from django.urls import reverse
 MESSAGES = {
     'invalid_email': 'ERROR: invalid email address is not allowed!',
 }
-# xyi
 
 
 class UserManager(BaseUserManager):
+    def _create_user(self, firstName, lastName, email, password=None, **extra_fields):
+        if not firstName:
+            raise ValueError('Указанное Имя должно быть установлено')
 
-    def create_user(self, email, password=None, **extra_fields):
-        """Create and saves a new user"""
+        if not lastName:
+            raise ValueError('Указанная Фамилия должна быть установлена')
+
         if not email:
-            raise ValueError(MESSAGES['invalid_email'])
-        user = self.model(email=self.normalize_email(email),
-                          **extra_fields)
+            raise ValueError(
+                'Данный адрес электронной почты должен быть установлен')
+
+        email = self.normalize_email(email)
+        user = self.model(firstName=firstName,
+                          lastName=lastName, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
         return user
 
-    def create_superuser(self, email, password):
-        """Create and save a new superuser"""
-        user = self.create_user(email, password)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
+    def create_user(self, firstName, lastName, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(firstName, lastName, email, password, **extra_fields)
+
+    def create_superuser(self, firstName, lastName, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Суперпользователь должен иметь is_staff=True.')
+
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(
+                'Суперпользователь должен иметь is_superuser=True.')
+
+        return self._create_user(firstName, lastName, email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -43,8 +68,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, verbose_name="Is Active")
     is_staff = models.BooleanField(default=False, verbose_name="Is Staff")
 
-    objects = UserManager()
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('email',)
+
+    objects = UserManager()
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def token(self):
+        return self._generate_jwt_token()
+
+    def get_full_name(self):
+        return self.firstName
+
+    def get_short_name(self):
+        return self.firstName
+
+    def _generate_jwt_token(self):
+        dt = datetime.now() + timedelta(days=60)
+
+        token = jwt.encode({
+            'id': self.pk,
+            'exp': int(dt.strftime('%s'))
+        }, settings.SECRET_KEY, algorithm='HS256')
+
+        return token.decode('utf-8')
 
 
 class Event(models.Model):

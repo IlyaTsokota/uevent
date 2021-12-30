@@ -1,5 +1,7 @@
 FROM python:3.7-alpine
 
+MAINTAINER Dovgotko Vadym <mr.1cpu@gmail.com>
+
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app/api
