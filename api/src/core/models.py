@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
 MESSAGES = {
     'invalid_email': 'ERROR: invalid email address is not allowed!',
 }
+# xyi
 
 
 class UserManager(BaseUserManager):
